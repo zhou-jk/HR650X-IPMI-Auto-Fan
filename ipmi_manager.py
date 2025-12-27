@@ -30,8 +30,12 @@ def get_temperature(ipmi):
     temperatures = []
 
     for line in lines:
+        # 跳过空行或格式不正确的行
+        parts = line.split('|')
+        if len(parts) < 2:
+            continue
         try:
-            if line.split('|')[1].strip() == 'na':
+            if parts[1].strip() == 'na':
                 temperatures.append(float(0))  
                 print('The system is off, tempature is na')
                 continue
