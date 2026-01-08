@@ -17,7 +17,8 @@ def get_timestamp():
     return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 def get_temperature(ipmi):
-    cmd = f"ipmitool -I lanplus -H {ipmi['host']} -U {ipmi['username']} -P '{ipmi['password']}' sensor | grep CPU | grep Temp"
+    # 移除 grep 命令，改用 Python 过滤（兼容 Windows）
+    cmd = f"ipmitool -I lanplus -H {ipmi['host']} -U {ipmi['username']} -P \"{ipmi['password']}\" sensor"
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     output, error = process.communicate()
 
@@ -26,7 +27,9 @@ def get_temperature(ipmi):
         return None
 
     output = output.decode('utf-8')
-    lines = output.split('\n')
+    all_lines = output.split('\n')
+    # 用 Python 过滤包含 CPU 和 Temp 的行
+    lines = [line for line in all_lines if 'CPU' in line and 'Temp' in line]
     temperatures = []
 
     for line in lines:
